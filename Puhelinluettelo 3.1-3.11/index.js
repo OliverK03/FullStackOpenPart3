@@ -55,3 +55,24 @@ app.delete('/api/persons/:id', (req, res) => {
     persons = persons.filter(person => person.id !== id)
     res.status(204).end()
 })
+
+const generateId = () => {
+    const maxId = persons.length > 0
+        ? Math.max(...persons.map(person => person.id))
+        : 0
+    return maxId + 1
+}
+
+app.post('/api/persons', (req, res) => {
+    const body = req.body
+
+    const person = {
+        id: String(generateId()),
+        name: body.name,
+        number: body.number,
+    }
+
+    persons = persons.concat(person)
+
+    res.json(person)
+})
