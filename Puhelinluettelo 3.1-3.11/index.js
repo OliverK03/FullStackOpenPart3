@@ -1,9 +1,9 @@
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
 const PORT = 3001
 app.listen(PORT)
 console.log(`Server running on port ${PORT}`)
-
 
 
 let persons = [
@@ -29,7 +29,10 @@ let persons = [
     }
 ]
 
+app.use(morgan('tiny'))
+
 app.use(express.json())
+
 
 app.get('/api/persons', (req, res) => {
     res.json(persons)
