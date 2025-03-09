@@ -29,10 +29,31 @@ let persons = [
     }
 ]
 
-app.use(morgan('tiny'))
+morgan.token('body', (req) => {
+    return req.method === 'POST' || req.method === 'PUT' ? JSON.stringify(req.body) : ''
+})
 
 app.use(express.json())
+app.use(morgan((tokens, req, res) => {
+    const log = [
+        tokens.method(req, res),
+        tokens.url(req, res),
+        tokens.status(req, res),
+        tokens.res(req, res, 'content-length'), '-',
+        tokens['response-time'](req, res), 'ms',
+    ]
+    if (req.method == 'POST' || req.method == 'PUT') {
+        log.push(tokens.body(req, res))
+    }
+    return log.join(' ')
+}))
 
+const generateId = () => {
+    const maxId = persons.length > 0
+        ? Math.max(...persons.map(person => person.id))
+        : 0
+    return maxId + 1
+}
 
 app.get('/api/persons', (req, res) => {
     res.json(persons)
@@ -58,13 +79,6 @@ app.delete('/api/persons/:id', (req, res) => {
     persons = persons.filter(person => person.id !== id)
     res.status(204).end()
 })
-
-const generateId = () => {
-    const maxId = persons.length > 0
-        ? Math.max(...persons.map(person => person.id))
-        : 0
-    return maxId + 1
-}
 
 app.post('/api/persons', (req, res) => {
     const body = req.body
